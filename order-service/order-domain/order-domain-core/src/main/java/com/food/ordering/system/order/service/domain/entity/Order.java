@@ -12,6 +12,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 
+
 public class Order extends AggregateRoot<OrderId> {
 
     private final CustomerId customerId;
@@ -24,6 +25,7 @@ public class Order extends AggregateRoot<OrderId> {
     private OrderStatus orderStatus;
     private List<String> failureMessagges;
 
+    /** CRTICAL BUSINESS LOGIC **/
 
     public void initializerOrder() {
         setId(new OrderId(UUID.randomUUID()));
@@ -39,10 +41,49 @@ public class Order extends AggregateRoot<OrderId> {
 
     }
 
+    public void pay() {
+        if (orderStatus != OrderStatus.PENDING) {
+            throw new OrderDomainException("Order is not in correct state for pay operation!");
+        }
+        orderStatus = OrderStatus.PAID;
+    }
+
+    public void  approve(){
+        if (orderStatus != OrderStatus.PAID) {
+            throw new OrderDomainException("Order is not in correct state for approve operation!");
+        }
+        orderStatus = OrderStatus.APPROVED;
+    }
+
+    public void initCancel(List<String> failureMessagges){
+        if (orderStatus != OrderStatus.PAID) {
+            throw new OrderDomainException("Order is not in correct state for initCancel operation!");
+        }
+        orderStatus = OrderStatus.CANELLING;
+        updateFailureMessages(failureMessagges);
+    }
+
+    public void cancel(List<String> failureMessagges){
+        if (!(orderStatus == OrderStatus.PENDING || orderStatus == OrderStatus.CANELLING)) {
+            throw new OrderDomainException("Order is not in correct state for cancel operation!");
+        }
+        orderStatus = OrderStatus.CANCELLED;
+        updateFailureMessages(failureMessagges);
+    }
+
+    private void updateFailureMessages(List<String> failureMessagges) {
+        if(this.failureMessagges != null && failureMessagges != null){
+            this.failureMessagges.addAll(failureMessagges.stream().filter(messagge -> !messagge.isEmpty()).toList());
+        }
+
+        if(this.failureMessagges == null){
+            this.failureMessagges = failureMessagges;
+        }
+    }
+
     private void validateInitialOrder() {
         if (orderStatus != null || getId() != null)
             throw new OrderDomainException("Order is no correct state for initilization!");
-
     }
 
     private void validateTotalPrice() {
@@ -73,6 +114,8 @@ public class Order extends AggregateRoot<OrderId> {
         AtomicLong itemId = new AtomicLong(1);
         items.forEach(orderItem -> orderItem.initializerOrderItems(super.getId(), new OrderItemId(itemId.getAndIncrement())));
     }
+
+    /*************************************************************************************************************/
 
     private Order(Builder builder) {
         super.setId(builder.orderId);
