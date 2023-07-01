@@ -52,7 +52,7 @@ public class OrderCreateCommadHandler {
         Order order = this.orderDataMapper.createOrderCommandToOrder(createOrderCommand);
         OrderCreatedEvent orderCreatedEvent = orderDomainService.validateAndInitiateOrder(order, restaurant);
         Order orderResult = this.saveOrder(order);
-        log.info("Order is created with id: {}", orderResult.getId().getValue());
+        log.info("Order is created with id: {}", orderResult.getId().getValue()git mer);
         return this.orderDataMapper.orderToCreateOrderResponse(orderResult);
     }
 
