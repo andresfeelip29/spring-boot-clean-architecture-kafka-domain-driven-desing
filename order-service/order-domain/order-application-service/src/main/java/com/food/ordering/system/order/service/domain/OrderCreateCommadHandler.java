@@ -16,7 +16,6 @@ public class OrderCreateCommadHandler {
 
     private final OrderCreateHelper orderCreateHelper;
     private final OrderDataMapper orderDataMapper;
-
     private final OrderCreatedPaymentRequestMessagePublisher orderCreatedPaymentRequestMessagePublisher;
 
     public OrderCreateCommadHandler(OrderCreateHelper orderCreateHelper,
@@ -33,7 +32,5 @@ public class OrderCreateCommadHandler {
         orderCreatedPaymentRequestMessagePublisher.publish(orderCreatedEvent);
         return this.orderDataMapper.orderToCreateOrderResponse(orderCreatedEvent.getOrder());
     }
+}
 
-    private Restaurant checkRestaurant(CreateOrderCommand createOrderCommand) {
-
-    }
